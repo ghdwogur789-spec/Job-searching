@@ -93,13 +93,15 @@ export interface JobPosting {
   role: string;
   location: string;
   companySize: '대기업' | '중견기업' | '외국계' | '스타트업';
-  employmentType: '신입' | '채용연계형 인턴' | '신입/경력';
+  employmentType: '신입' | '인턴' | '채용연계형 인턴' | '교육생/아카데미';
+  liveStatus?: '실시간 공식 접수중' | '공식 상시 인재풀 등록' | '공식 교육/부트캠프' | '차기 시즌 대비';
   requirements: string;
   preferred: string;
   responsibilities: string;
   startDate: string;
   deadline: string;
   officialUrl: string;
+  officialSearchUrl?: string;
   isSample: boolean;
   isVerified: boolean;
   verifiedDate: string;

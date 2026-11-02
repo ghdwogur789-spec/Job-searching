@@ -36,6 +36,9 @@ interface MobilityContextType {
   updateJobStatus: (jobId: string, status: JobStatus) => void;
   updateJobNotes: (jobId: string, notes: string) => void;
   evaluateJobFit: (jobId: string) => Promise<any>;
+  addCustomJobPosting: (job: Omit<JobPosting, 'id'>) => void;
+  resetJobPostingsToOfficial: () => void;
+  deleteJobPosting: (jobId: string) => void;
   companies: Company[];
   analyzeCompanyAI: (companyId: string) => Promise<any>;
   news: IndustryNews[];
@@ -122,7 +125,7 @@ export const MobilityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isAnalyzingCompetency, setIsAnalyzingCompetency] = useState(false);
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>(() => {
-    const saved = localStorage.getItem('mobility_job_postings');
+    const saved = localStorage.getItem('mobility_job_postings_v4');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -209,7 +212,7 @@ export const MobilityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [competencyAnalysis]);
 
   useEffect(() => {
-    localStorage.setItem('mobility_job_postings', JSON.stringify(jobPostings));
+    localStorage.setItem('mobility_job_postings_v4', JSON.stringify(jobPostings));
   }, [jobPostings]);
 
   useEffect(() => {
@@ -347,6 +350,34 @@ export const MobilityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.error('Failed to evaluate job fit:', err);
       return null;
     }
+  };
+
+  // Add custom verified job posting
+  const addCustomJobPosting = (newJob: Omit<JobPosting, 'id'>) => {
+    const jobWithId: JobPosting = {
+      ...newJob,
+      id: `job-custom-${Date.now()}`,
+      isVerified: true,
+      verifiedDate: new Date().toISOString().split('T')[0],
+      verifiedSource: newJob.verifiedSource || '사용자 공식 사이트 직접 확인 등록',
+      fitScore: 90
+    };
+    setJobPostings(prev => [jobWithId, ...prev]);
+    // Evaluate fit automatically
+    setTimeout(() => {
+      evaluateJobFit(jobWithId.id);
+    }, 100);
+  };
+
+  // Reset to fact-checked official postings
+  const resetJobPostingsToOfficial = () => {
+    setJobPostings(initialJobPostings);
+    localStorage.removeItem('mobility_job_postings_v4');
+  };
+
+  // Delete job posting
+  const deleteJobPosting = (jobId: string) => {
+    setJobPostings(prev => prev.filter(j => j.id !== jobId));
   };
 
   // Analyze Company AI
@@ -668,6 +699,9 @@ export const MobilityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateJobStatus,
         updateJobNotes,
         evaluateJobFit,
+        addCustomJobPosting,
+        resetJobPostingsToOfficial,
+        deleteJobPosting,
         companies,
         analyzeCompanyAI,
         news,

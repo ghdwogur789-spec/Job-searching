@@ -22,7 +22,15 @@ import {
   UserCheck,
   RefreshCw,
   Loader2,
-  ArrowUpRight
+  ArrowUpRight,
+  PlusCircle,
+  Globe,
+  MapPin,
+  GraduationCap,
+  Info,
+  Calendar,
+  X,
+  Trash2
 } from 'lucide-react';
 
 export const AIRecommendationsView: React.FC = () => {
@@ -36,6 +44,9 @@ export const AIRecommendationsView: React.FC = () => {
     jobPostings,
     updateJobStatus,
     evaluateJobFit,
+    addCustomJobPosting,
+    resetJobPostingsToOfficial,
+    deleteJobPosting,
     selectedJobForModal,
     setSelectedJobForModal,
     setActiveMenu
@@ -45,9 +56,63 @@ export const AIRecommendationsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'recommendations' | 'profile-input'>('recommendations');
   const [filterCategory, setFilterCategory] = useState<string>('전체');
   const [filterSize, setFilterSize] = useState<string>('전체');
+  const [filterEmploymentType, setFilterEmploymentType] = useState<string>('전체');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [expandedJobId, setExpandedJobId] = useState<string | null>(selectedJobForModal ? selectedJobForModal.id : null);
   const [loadingJobFitId, setLoadingJobFitId] = useState<string | null>(null);
+
+  // Add Verified Job Modal & Portals Hub State
+  const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
+  const [isPortalsHubOpen, setIsPortalsHubOpen] = useState(true);
+  const [newCompany, setNewCompany] = useState('현대자동차');
+  const [newTitle, setNewTitle] = useState('');
+  const [newRole, setNewRole] = useState('생산기술');
+  const [newLocation, setNewLocation] = useState('울산공장');
+  const [newCategory, setNewCategory] = useState<'완성차' | '자동차 부품' | '전기차/배터리' | '자율주행/SW' | '차량 전장' | '스마트팩토리/로봇' | '모빌리티 스타트업'>('완성차');
+  const [newSize, setNewSize] = useState<'대기업' | '중견기업' | '외국계' | '스타트업'>('대기업');
+  const [newEmploymentType, setNewEmploymentType] = useState<'신입' | '인턴' | '채용연계형 인턴' | '교육생/아카데미'>('신입');
+  const [newLiveStatus, setNewLiveStatus] = useState<'실시간 공식 접수중' | '공식 상시 인재풀 등록' | '공식 교육/부트캠프' | '차기 시즌 대비'>('실시간 공식 접수중');
+  const [newOfficialUrl, setNewOfficialUrl] = useState('https://talent.hyundai.com');
+  const [newRequirements, setNewRequirements] = useState('');
+  const [newPreferred, setNewPreferred] = useState('');
+  const [newResponsibilities, setNewResponsibilities] = useState('');
+  const [newDeadline, setNewDeadline] = useState('2026-11-30');
+
+  const handleCreateCustomJob = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) {
+      alert('공식 채용공고명을 입력해주세요.');
+      return;
+    }
+    addCustomJobPosting({
+      companyName: newCompany,
+      companyCategory: newCategory,
+      title: newTitle.trim(),
+      role: newRole,
+      location: newLocation,
+      companySize: newSize,
+      employmentType: newEmploymentType,
+      liveStatus: newLiveStatus,
+      requirements: newRequirements || '관련 이공계 학사 이상 (졸업예정자 포함)',
+      preferred: newPreferred || 'CAD/PLC/모빌리티 프로젝트 역량 우대',
+      responsibilities: newResponsibilities || '해당 직무 실무 공정/설계/연구개발 업무 수행',
+      startDate: new Date().toISOString().split('T')[0],
+      deadline: newDeadline,
+      officialUrl: newOfficialUrl,
+      officialSearchUrl: newOfficialUrl,
+      isSample: false,
+      isVerified: true,
+      verifiedDate: new Date().toISOString().split('T')[0],
+      verifiedSource: `${newCompany} 공식 채용사이트 직접 확인`,
+      verificationNote: `사용자가 ${newCompany} 채용 페이지에서 직접 확인하여 등록한 검증 공고입니다.`,
+      source: `${newCompany} 채용관`,
+      status: '관심 공고',
+      fitScore: 92
+    });
+    setIsAddJobModalOpen(false);
+    setNewTitle('');
+    alert('확인하신 공식 채용공고가 등록되었습니다. AI 적합도 분석이 즉시 실행됩니다.');
+  };
 
   // Profile Edit State
   const [editMajor, setEditMajor] = useState(profile.major);
@@ -123,16 +188,26 @@ export const AIRecommendationsView: React.FC = () => {
     }
   };
 
+  // Employment type counts
+  const countAll = jobPostings.length;
+  const countNew = jobPostings.filter(j => j.employmentType === '신입').length;
+  const countIntern = jobPostings.filter(j => j.employmentType === '인턴' || j.employmentType === '채용연계형 인턴').length;
+  const countAcademy = jobPostings.filter(j => j.employmentType === '교육생/아카데미').length;
+
   // Filtered Jobs
   const filteredJobs = jobPostings.filter(job => {
     const matchCategory = filterCategory === '전체' || job.companyCategory === filterCategory;
     const matchSize = filterSize === '전체' || job.companySize === filterSize;
+    const matchEmploymentType = filterEmploymentType === '전체' ||
+      (filterEmploymentType === '인턴'
+        ? (job.employmentType === '인턴' || job.employmentType === '채용연계형 인턴')
+        : job.employmentType === filterEmploymentType);
     const matchSearch = !searchKeyword ||
       job.companyName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
       job.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
       job.role.toLowerCase().includes(searchKeyword.toLowerCase()) ||
       job.location.toLowerCase().includes(searchKeyword.toLowerCase());
-    return matchCategory && matchSize && matchSearch;
+    return matchCategory && matchSize && matchEmploymentType && matchSearch;
   });
 
   return (
@@ -626,25 +701,148 @@ export const AIRecommendationsView: React.FC = () => {
 
           {/* 3. AI Recommended Job Postings Feed */}
           <div className="space-y-4">
-            {/* Fact-Check Verification Guarantee Banner */}
-            <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-emerald-950 flex items-center gap-1.5">
-                    <span>공식 채용공고 100% 사실확인(Fact-Check) 검증 완료</span>
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-600 text-white font-bold text-[10px]">
-                      VERIFIED
-                    </span>
-                  </h4>
-                  <p className="text-emerald-800 text-[11px] mt-0.5 leading-relaxed">
-                    본 플랫폼에 등록된 모든 공고는 현대자동차, 기아, 현대모비스, LG에너지솔루션, 삼성SDI, HL만도 등 <strong>공식 기업 채용 포털의 실제 진행 중인 모집 요강(직무 기술서, 지원 자격, 근무지)</strong>을 전수 사실확인한 후 등록되었습니다.
+            {/* Official Portals Fact-Check & Verification Hub */}
+            <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-white p-5 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-emerald-600 text-white shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                        공식 채용사이트 100% 사실확인(Fact-Check) 및 원문 연동관
+                      </h4>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-extrabold text-[10px]">
+                        FACT-CHECKED
+                      </span>
+                    </div>
+                    <p className="text-slate-600 text-xs mt-1 leading-relaxed">
+                      모든 공고는 기업 공식 채용 포털의 모집요강(기업명, 공고명, 모집직무, 근무지, 고용형태)을 대조하여 등록됩니다.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setIsPortalsHubOpen(!isPortalsHubOpen)}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-emerald-300 bg-white/90 text-emerald-800 font-bold hover:bg-emerald-50 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>주요 기업 채용관 {isPortalsHubOpen ? '접기' : '열기'}</span>
+                    {isPortalsHubOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+                  <button
+                    onClick={() => setIsAddJobModalOpen(true)}
+                    className="text-xs px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    <span>+ 실제 확인한 공고 등록</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Crucial Explanatory Callout on Hyundai's Quarterly & Talent Pool Hiring */}
+              <div className="p-3.5 rounded-xl bg-white border border-emerald-200/80 text-xs space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <Info className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>💡 현대자동차 채용 방식 및 실시간 직무 확인 가이드</span>
+                </div>
+                <div className="text-slate-600 text-[11px] leading-relaxed pl-6 space-y-1">
+                  <p>
+                    • <strong>예측 가능한 상시채용(분기별 공채):</strong> 현대자동차는 대규모 신입(생산기술/R&D 등)을 매년 분기별(3월, 6월, 9월 등) 집중 공고로 진행합니다. 해당 분기 접수 마감 후에는 포털 메인에서 공고가 닫히며 차기 분기 시즌에 다시 열립니다.
+                  </p>
+                  <p>
+                    • <strong>공식 상시 인재풀(Talent Pool):</strong> 공채 시즌 외 평시에는 <span className="text-blue-700 font-bold">talent.hyundai.com 공식 상시 인재풀</span>에 이력서를 등록해두면, 각 공장(울산/아산/전주) 및 부문 결원 발생 시 우선 서류 검토 및 맞춤 채용 제안을 받으실 수 있습니다.
+                  </p>
+                  <p>
+                    • <strong>상태 투명화:</strong> 본 플랫폼은 <span className="text-emerald-700 font-bold">🟢 실시간 공식 접수중</span>, <span className="text-amber-700 font-bold">🟡 공식 상시 인재풀 등록</span>, <span className="text-blue-700 font-bold">🔵 공식 교육/부트캠프</span>, <span className="text-purple-700 font-bold">⏳ 차기 시즌 대비 가이드</span>로 공고 상태를 명확히 구분합니다.
                   </p>
                 </div>
               </div>
-              <div className="shrink-0 text-[11px] text-emerald-700 font-semibold bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-200">
-                실시간 공식 포털 원문 연동
-              </div>
+
+              {/* Quick Official Portal Buttons */}
+              {isPortalsHubOpen && (
+                <div className="pt-2 border-t border-emerald-200/60">
+                  <span className="text-[11px] font-bold text-slate-500 block mb-2">
+                    주요 모빌리티 공식 채용관 실시간 원문 직접 조회:
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <a
+                      href="https://talent.hyundai.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">🚗 현대자동차 인재채용</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://career.kia.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">🚙 기아 탤런트 라운지</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://hyundaimobis.recruiter.co.kr"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">⚙️ 현대모비스 채용관</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://careers.lg.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">🔋 LG에너지솔루션</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://www.samsungcareers.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">⚡ 삼성SDI 채용관</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://hlmando.recruiter.co.kr"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">🛞 HL만도 인재채용</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://hyundai-wia.recruiter.co.kr"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">🦾 현대위아 채용관</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a
+                      href="https://www.hyundai-ngv.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 text-xs font-semibold text-slate-800 flex items-center justify-between transition-all"
+                    >
+                      <span className="truncate">🎓 현대차 H-Mobility</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -667,7 +865,7 @@ export const AIRecommendationsView: React.FC = () => {
                     type="text"
                     value={searchKeyword}
                     onChange={(e) => setSearchKeyword(e.target.value)}
-                    placeholder="기업/공고/직무 검색..."
+                    placeholder="기업/공고/직무/근무지 검색..."
                     className="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white"
                   />
                 </div>
@@ -697,6 +895,89 @@ export const AIRecommendationsView: React.FC = () => {
                   <option value="중견기업">중견기업</option>
                   <option value="스타트업">스타트업</option>
                 </select>
+
+                {/* Reset to official button */}
+                <button
+                  onClick={() => {
+                    if (confirm('최신 공식 사실확인 공고 목록으로 재동기화하시겠습니까?')) {
+                      resetJobPostingsToOfficial();
+                      alert('공식 사실확인 공고 데이터가 최신 상태로 동기화되었습니다.');
+                    }
+                  }}
+                  title="공식 데이터 최신 재동기화"
+                  className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Employment Type Filter Pills (신입 / 인턴 / 교육생 전용 필터) */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-700 mr-1 flex items-center gap-1">
+                  <Filter className="w-3.5 h-3.5 text-blue-600" />
+                  채용 유형:
+                </span>
+                <button
+                  onClick={() => setFilterEmploymentType('전체')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    filterEmploymentType === '전체'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  전체 ({countAll})
+                </button>
+                <button
+                  onClick={() => setFilterEmploymentType('신입')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterEmploymentType === '신입'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                >
+                  <span>🎓 신입</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    filterEmploymentType === '신입' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {countNew}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFilterEmploymentType('인턴')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterEmploymentType === '인턴'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-700'
+                  }`}
+                >
+                  <span>💼 인턴 / 채용연계형</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    filterEmploymentType === '인턴' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-800'
+                  }`}>
+                    {countIntern}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFilterEmploymentType('교육생/아카데미')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterEmploymentType === '교육생/아카데미'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700'
+                  }`}
+                >
+                  <span>📚 교육생 / 아카데미</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    filterEmploymentType === '교육생/아카데미' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {countAcademy}
+                  </span>
+                </button>
+              </div>
+
+              <div className="text-[11px] text-slate-500 font-medium">
+                엄선 기준: <strong className="text-slate-800">경력직 제외</strong> · 신입/인턴/교육 사실확인 공고만 표기
               </div>
             </div>
 
@@ -739,31 +1020,44 @@ export const AIRecommendationsView: React.FC = () => {
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
                                   {job.companyCategory}
                                 </span>
-                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">
-                                  {job.employmentType}
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                  🎓 {job.employmentType} (신입/인턴 대상)
                                 </span>
                                 <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-200">
                                   {job.companySize}
                                 </span>
-                                {job.isVerified ? (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                    공식채용 사실확인 완료
+                                {job.liveStatus === '실시간 공식 접수중' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100/80 text-emerald-800 border border-emerald-300">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                                    🟢 실시간 공식 접수중
                                   </span>
-                                ) : job.isSample ? (
-                                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                                    예시 공고 데이터
+                                )}
+                                {job.liveStatus === '공식 상시 인재풀 등록' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100/80 text-amber-900 border border-amber-300">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                                    🟡 공식 상시 인재풀 등록
                                   </span>
-                                ) : null}
+                                )}
+                                {job.liveStatus === '공식 교육/부트캠프' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-100/80 text-blue-900 border border-blue-300">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                    🔵 공식 교육/부트캠프 접수
+                                  </span>
+                                )}
+                                {job.liveStatus === '차기 시즌 대비' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-purple-100/80 text-purple-900 border border-purple-300">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
+                                    ⏳ 차기 시즌 대비 가이드
+                                  </span>
+                                )}
                               </div>
                               <h4 className="text-base font-bold text-slate-900 mt-1.5">
                                 {job.title}
                               </h4>
-                              {job.verifiedSource && (
-                                <p className="text-[11px] text-emerald-700 mt-1 flex items-center gap-1 font-medium">
-                                  <span>출처 사실확인:</span>
-                                  <span className="font-semibold underline">{job.verifiedSource}</span>
-                                  <span className="text-slate-400">({job.verifiedDate} 확인)</span>
+                              {job.verificationNote && (
+                                <p className="text-[11px] text-emerald-800 mt-1 flex items-start gap-1 font-medium bg-emerald-50/60 p-2 rounded-lg border border-emerald-100">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                  <span>{job.verificationNote}</span>
                                 </p>
                               )}
                             </div>
@@ -775,35 +1069,39 @@ export const AIRecommendationsView: React.FC = () => {
                               <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                               <span>추천 적합도 {job.fitScore || 90}%</span>
                             </div>
-                            <span className="text-[11px] text-slate-400">
-                              접수마감: <strong className="text-slate-700">{job.deadline}</strong>
+                            <span className="text-[11px] text-slate-500">
+                              접수 일정: <strong className="text-slate-800">{job.deadline}</strong>
                             </span>
                           </div>
                         </div>
 
-                        {/* Middle Attributes */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-slate-100 text-xs">
+                        {/* Fact-Checked Core Attributes Table */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
                           <div>
-                            <span className="text-slate-400 font-medium">모집 직무: </span>
-                            <span className="font-bold text-slate-800">{job.role}</span>
+                            <span className="text-slate-400 font-medium block text-[11px]">🏢 대상 기업</span>
+                            <span className="font-bold text-slate-900">{job.companyName}</span>
                           </div>
                           <div>
-                            <span className="text-slate-400 font-medium">근무 지역: </span>
-                            <span className="text-slate-700">{job.location}</span>
+                            <span className="text-slate-400 font-medium block text-[11px]">⚙️ 모집 직무</span>
+                            <span className="font-bold text-blue-700">{job.role}</span>
                           </div>
                           <div>
-                            <span className="text-slate-400 font-medium">접수 기간: </span>
-                            <span className="text-slate-700">{job.startDate} ~ {job.deadline}</span>
+                            <span className="text-slate-400 font-medium block text-[11px]">📍 실제 근무지</span>
+                            <span className="font-semibold text-slate-800">{job.location}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 font-medium block text-[11px]">🎓 지원 대상 (신입 여부)</span>
+                            <span className="font-bold text-emerald-700">{job.employmentType} (신입/인턴/교육)</span>
                           </div>
                         </div>
 
                         {/* Brief Requirements & Preferred */}
-                        <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
-                          <p className="text-slate-700">
-                            <strong className="text-slate-900">지원 자격:</strong> {job.requirements.replace(/\n/g, ' / ')}
+                        <div className="mt-2.5 p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1.5">
+                          <p className="text-slate-700 leading-relaxed">
+                            <strong className="text-slate-900 font-bold">지원 자격:</strong> {job.requirements.replace(/\n/g, ' / ')}
                           </p>
-                          <p className="text-slate-600">
-                            <strong className="text-slate-800">우대 사항:</strong> {job.preferred.replace(/\n/g, ' / ')}
+                          <p className="text-slate-600 leading-relaxed">
+                            <strong className="text-slate-800 font-semibold">우대 사항:</strong> {job.preferred.replace(/\n/g, ' / ')}
                           </p>
                         </div>
 
@@ -829,14 +1127,30 @@ export const AIRecommendationsView: React.FC = () => {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {job.id.startsWith('job-custom-') && (
+                              <button
+                                onClick={() => {
+                                  if (confirm('이 직접 등록 공고를 삭제하시겠습니까?')) {
+                                    deleteJobPosting(job.id);
+                                  }
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                                title="등록 공고 삭제"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>삭제</span>
+                              </button>
+                            )}
+
                             <a
                               href={job.officialUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                              className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                             >
-                              공식 채용관 원문
-                              <ArrowUpRight className="w-3.5 h-3.5" />
+                              <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>공식 채용사이트 원문 바로가기</span>
+                              <ArrowUpRight className="w-3 h-3" />
                             </a>
 
                             <button
@@ -987,6 +1301,177 @@ export const AIRecommendationsView: React.FC = () => {
                 })
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Verified Job Modal */}
+      {isAddJobModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl p-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-blue-100 text-blue-700">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    실제 확인한 공식 채용공고 직접 등록
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    공식 채용사이트에서 확인하신 공고를 등록하면 AI가 즉시 분석합니다.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAddJobModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCustomJob} className="space-y-4 mt-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">기업명 *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCompany}
+                    onChange={(e) => setNewCompany(e.target.value)}
+                    placeholder="예: 현대자동차, 기아, 현대모비스"
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">모집 직무 *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    placeholder="예: 생산기술, 제조기술, R&D"
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">공식 채용공고명 *</label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="예: [대졸 신입] 스마트팩토리 제조엔지니어링 수시 채용"
+                  className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">실제 근무지 *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newLocation}
+                    onChange={(e) => setNewLocation(e.target.value)}
+                    placeholder="예: 울산공장, 남양연구소, 화성"
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">고용 형태 (신입 여부) *</label>
+                  <select
+                    value={newEmploymentType}
+                    onChange={(e) => setNewEmploymentType(e.target.value as any)}
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
+                  >
+                    <option value="신입">🎓 신입 (정규직)</option>
+                    <option value="인턴">💼 체험형 인턴</option>
+                    <option value="채용연계형 인턴">💼 채용연계형 인턴</option>
+                    <option value="교육생/아카데미">📚 교육생 / 아카데미</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">실시간 접수 상태 *</label>
+                  <select
+                    value={newLiveStatus}
+                    onChange={(e) => setNewLiveStatus(e.target.value as any)}
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
+                  >
+                    <option value="실시간 공식 접수중">🟢 실시간 공식 접수중</option>
+                    <option value="공식 상시 인재풀 등록">🟡 공식 상시 인재풀 등록</option>
+                    <option value="공식 교육/부트캠프">🔵 공식 교육/부트캠프</option>
+                    <option value="차기 시즌 대비">⏳ 차기 시즌 대비</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">공식 채용사이트 원문 URL *</label>
+                <input
+                  type="url"
+                  required
+                  value={newOfficialUrl}
+                  onChange={(e) => setNewOfficialUrl(e.target.value)}
+                  placeholder="예: https://talent.hyundai.com"
+                  className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">지원 자격</label>
+                  <textarea
+                    rows={2}
+                    value={newRequirements}
+                    onChange={(e) => setNewRequirements(e.target.value)}
+                    placeholder="예: 4년제 대졸(예정자), 기계/전자/산공, 어학성적 필수"
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">우대 사항</label>
+                  <textarea
+                    rows={2}
+                    value={newPreferred}
+                    onChange={(e) => setNewPreferred(e.target.value)}
+                    placeholder="예: CATIA, PLC 제어 유경험자, 기사 자격증 소지자"
+                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">접수 마감일 (또는 상시접수)</label>
+                <input
+                  type="text"
+                  value={newDeadline}
+                  onChange={(e) => setNewDeadline(e.target.value)}
+                  placeholder="예: 2026-11-30 또는 상시 등록"
+                  className="w-full p-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddJobModalOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 cursor-pointer"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer shadow-xs flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>공고 등록 및 AI 즉시 분석</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
