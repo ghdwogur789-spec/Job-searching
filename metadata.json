@@ -1,0 +1,6 @@
+{
+  "name": "MOBILITY CAREER - AI 기반 모빌리티 취업 지원 플랫폼",
+  "description": "모빌리티 산업 취업 준비생을 위한 AI 맞춤 채용공고 추천, 기업 및 산업 분석, 통합 채용 캘린더, 자기소개서 첨삭 및 AI 모의면접 통합 솔루션",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
