@@ -58,18 +58,11 @@ export const RoadmapView: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <Milestone className="w-3.5 h-3.5" />
-            <span>AI 맞춤 커리어 로드맵 & 준비 현황</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            목표 직무 역량 개발 로드맵 & 합격 플래너
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            역량 로드맵
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            목표 직무에 필요한 주간 학습 목표, 추천 자격증, 추천 교육 과정 및 실제 취업 준비 완성도를 추적합니다.
-          </p>
         </div>
 
         {/* Target Role Selector & Generate Button */}

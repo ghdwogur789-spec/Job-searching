@@ -54,25 +54,27 @@ export const IndustryNewsView: React.FC = () => {
     }
   };
 
+  const getDirectNewsUrl = (item: IndustryNews) => {
+    if (item.originalUrl && item.originalUrl.includes('search.naver.com')) {
+      return item.originalUrl;
+    }
+    const cleanQuery = item.title.replace(/\[.*?\]/g, '').replace(/[^\w\s가-힣]/g, ' ').trim();
+    return `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(cleanQuery)}`;
+  };
+
+  const getDaumNewsUrl = (item: IndustryNews) => {
+    const cleanQuery = item.title.replace(/\[.*?\]/g, '').replace(/[^\w\s가-힣]/g, ' ').trim();
+    return `https://search.daum.net/search?w=news&q=${encodeURIComponent(cleanQuery)}`;
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <Newspaper className="w-3.5 h-3.5" />
-            <span>모빌리티 최신 동향 & 직무 영향 분석</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            모빌리티 산업 뉴스 및 AI 직무 심층 분석
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            산업 뉴스 & 직무 분석
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            단순 뉴스 브리핑에 그치지 않고, 생산기술·전장·배터리 등 직무별 중요 역량과 실제 면접 예상 질문으로 연결합니다.
-          </p>
-        </div>
-
-        <div className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-          <span className="font-bold text-slate-700">기사 검증 원칙:</span> 실제 언론 보도 및 부처 보도자료 기반 출처/일자 표기
         </div>
       </div>
 
@@ -131,17 +133,30 @@ export const IndustryNewsView: React.FC = () => {
               </div>
             </div>
 
-            {/* Footer with AI Career Link */}
-            <div className="p-4 bg-slate-50/70 border-t border-slate-100 rounded-b-2xl flex items-center justify-between text-xs">
+            {/* Footer with Direct News Link & AI Career Analysis */}
+            <div className="p-4 bg-slate-50/70 border-t border-slate-100 rounded-b-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
               <span className="text-[11px] text-slate-400">{item.source}</span>
 
-              <button
-                onClick={() => handleOpenAnalysisModal(item)}
-                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>AI 직무 영향 & 면접 분석</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={getDirectNewsUrl(item)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                  title="기사 원문 바로보기"
+                >
+                  <span>기사 원문</span>
+                  <ArrowUpRight className="w-3 h-3 text-slate-400" />
+                </a>
+
+                <button
+                  onClick={() => handleOpenAnalysisModal(item)}
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI 직무 분석</span>
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -265,16 +280,27 @@ export const IndustryNewsView: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-              <a
-                href={selectedNewsForModal.originalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline font-bold flex items-center gap-1 cursor-pointer"
-              >
-                언론사 원문 기사 확인
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
+            <div className="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <a
+                  href={getDirectNewsUrl(selectedNewsForModal)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>네이버 뉴스 원문 확인</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600" />
+                </a>
+                <a
+                  href={getDaumNewsUrl(selectedNewsForModal)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>다음 뉴스 검색</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-500" />
+                </a>
+              </div>
 
               <div className="flex items-center gap-2">
                 <button

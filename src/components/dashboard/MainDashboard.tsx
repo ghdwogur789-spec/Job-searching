@@ -61,17 +61,11 @@ export const MainDashboard: React.FC = () => {
         <div className="absolute bottom-0 left-1/3 -mb-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-            <span>AI 기반 모빌리티 취업 매칭 & 커리어 성장 엔진</span>
-          </div>
-
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
             나에게 맞는 모빌리티 취업, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">한곳에서</span>
           </h1>
           <p className="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed">
-            내 경험을 분석하고, 기업을 발견하고, 합격까지 준비하세요.
-            완성차부터 전기차 배터리, SDV 전장, 스마트팩토리 로봇까지 최신 모빌리티 직무 데이터와 Gemini AI가 당신의 커리어를 완성합니다.
+            완성차, 배터리, 전장부품, 스마트팩토리 로봇까지 모빌리티 전 산업의 실제 채용공고와 역량 분석을 제공합니다.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -489,11 +483,8 @@ export const MainDashboard: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-600" />
-              <span>오늘의 모빌리티 산업 뉴스 & 취업 영향 분석</span>
+              <span>산업 뉴스 & 직무 분석</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              단순 뉴스 요약이 아닌, 직무별 중요 역량과 면접 예상 질문으로 연결합니다.
-            </p>
           </div>
           <button
             onClick={() => setActiveMenu(4)}

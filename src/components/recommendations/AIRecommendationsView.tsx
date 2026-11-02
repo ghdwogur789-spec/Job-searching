@@ -212,19 +212,12 @@ export const AIRecommendationsView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Top Header & Tab Controls */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* Header & Tab Controls */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI 맞춤 채용공고 & 역량 분석</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            사용자 역량 기반 AI 채용공고 추천
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            맞춤 채용공고
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            입력된 전공, 보유 기술, 캡스톤 프로젝트, 자기소개서를 분석하여 최적의 모빌리티 직무와 실제 채용공고를 매칭합니다.
-          </p>
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -1151,6 +1144,17 @@ export const AIRecommendationsView: React.FC = () => {
                               <Globe className="w-3.5 h-3.5 text-emerald-600" />
                               <span>공식 채용사이트 원문 바로가기</span>
                               <ArrowUpRight className="w-3 h-3" />
+                            </a>
+
+                            <a
+                              href={`https://search.naver.com/search.naver?where=nexearch&query=${encodeURIComponent(job.companyName + ' ' + job.role + ' ' + (job.employmentType || '신입') + ' 채용')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                              title="네이버에서 실시간 채용 현황 및 공고 검색"
+                            >
+                              <span>실시간 채용 검색</span>
+                              <ArrowUpRight className="w-3 h-3 text-slate-400" />
                             </a>
 
                             <button

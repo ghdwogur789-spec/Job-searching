@@ -26,19 +26,12 @@ export const JobExplorationView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Top Header */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>모빌리티 직무 사전 & 역량 갭 분석</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            모빌리티 핵심 직무 탐색 및 역량 갭 비교
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            직무 탐색 & 역량 비교
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            생산기술, 제조기술, 공정설계, 품질보증, 섀시/의장 설계, 자율주행, 배터리 등 모빌리티 산업 핵심 직무와 나의 보유 역량을 시각적으로 비교합니다.
-          </p>
         </div>
 
         <button

@@ -141,19 +141,12 @@ export const CalendarView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Top Banner & Header */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <CalendarIcon className="w-3.5 h-3.5" />
-            <span>통합 모빌리티 채용 & 개인 취업 캘린더</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            기업별 채용 일정 & 개인 취업 스케줄 관리
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            채용 캘린더
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            서류 마감, 인적성, 면접 전형 일정을 한눈에 확인하고 나만의 취업 준비 일정을 등록하세요.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">

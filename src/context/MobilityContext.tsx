@@ -148,7 +148,7 @@ export const MobilityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   const [news, setNews] = useState<IndustryNews[]>(() => {
-    const saved = localStorage.getItem('mobility_news');
+    const saved = localStorage.getItem('mobility_news_v2');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { return initialIndustryNews; }
     }
@@ -220,7 +220,7 @@ export const MobilityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [companies]);
 
   useEffect(() => {
-    localStorage.setItem('mobility_news', JSON.stringify(news));
+    localStorage.setItem('mobility_news_v2', JSON.stringify(news));
   }, [news]);
 
   useEffect(() => {

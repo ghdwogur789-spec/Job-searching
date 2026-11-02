@@ -79,18 +79,11 @@ export const PortfolioView: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <FolderKanban className="w-3.5 h-3.5" />
-            <span>경험 자산 & 기술 포트폴리오 관리</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            모빌리티 프로젝트 및 포트폴리오 관리
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            프로젝트 & 포트폴리오
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            학부 캡스톤, 자작차, 인턴십, 공모전 경험을 등록하고 AI로 이력서 불릿 포인트와 포트폴리오 설명문을 추출하세요.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

@@ -159,19 +159,12 @@ export const AICoachView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Top Banner Header */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs mb-2">
-            <Sparkle className="w-3.5 h-3.5" />
-            <span>AI 자기소개서 첨삭 & 1:1 모의 면접 코치</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            AI 자기소개서 및 모의면접 코칭 센터
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            AI 자소서 & 면접 코치
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            STAR 기법 기반 자소서 첨삭과 모빌리티 기업별 5대 역량 심층 모의면접으로 서류와 면접을 완벽 대비하세요.
-          </p>
         </div>
 
         {/* Sub-tab Switcher */}
